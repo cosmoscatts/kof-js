@@ -30,6 +30,10 @@ export class Kyo extends Player {
         const obj = outer.animations.get(i)
         obj.frameCnt = gif.frames.length
         obj.loaded = true
+
+        if (i === 3) {
+          obj.frameRate = 4
+        }
       }
     }
   }

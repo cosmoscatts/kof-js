@@ -73,7 +73,11 @@ export class Player extends GameObject {
     }
 
     if ([0, 1].includes(this.status)) {
-      if (w) {
+      if (space) {
+        this.status = 4
+        this.vx = 0
+        this.frameCurrentCnt = 0
+      } else if (w) {
         if (d) {
           this.vx = this.speedx
         } else if (a) {
@@ -83,6 +87,7 @@ export class Player extends GameObject {
         }
         this.vy = this.speedy
         this.status = 3
+        this.frameCurrentCnt = 0
       } else if (d) {
         this.vx = this.speedx
         this.status = 1
@@ -96,9 +101,19 @@ export class Player extends GameObject {
     }
   }
 
+  updateDirection() {
+    const players = this.root.players
+    if (players[0] && players[1]) {
+      const me = this, you = players[1 - this.id]
+      if (me.x < you.x) me.direction = 1
+      else me.direction = -1
+    }
+  }
+
   update() {
     this.updateControl()
     this.updateMove()
+    this.updateDirection()
     this.render()
   }
 
@@ -111,9 +126,25 @@ export class Player extends GameObject {
 
     const obj = this.animations.get(status)
     if (obj?.loaded) {
-      const k = parseInt(this.frameCurrentCnt / obj.frameRate) % obj.frameCnt
-      const image = obj.gif.frames[k].image
-      this.ctx.drawImage(image, this.x, this.y + obj.offsetY, image.width * obj.scale, image.height * obj.scale)
+      if (this.direction > 0) {
+        const k = parseInt(this.frameCurrentCnt / obj.frameRate) % obj.frameCnt
+        const image = obj.gif.frames[k].image
+        this.ctx.drawImage(image, this.x, this.y + obj.offsetY, image.width * obj.scale, image.height * obj.scale)
+      } else {
+        this.ctx.save()
+        this.ctx.scale(-1, 1)
+        this.ctx.translate(-this.root.gameMap.$canvas.width(), 0)
+
+        const k = parseInt(this.frameCurrentCnt / obj.frameRate) % obj.frameCnt
+        const image = obj.gif.frames[k].image
+        this.ctx.drawImage(image, this.root.gameMap.$canvas.width() - this.x - this.width, this.y + obj.offsetY, image.width * obj.scale, image.height * obj.scale)
+
+        this.ctx.restore()
+      }
+    }
+
+    if (this.status === 4 && this.frameCurrentCnt === obj.frameRate * (obj.frameCnt - 1)) {
+      this.status = 0
     }
 
     this.frameCurrentCnt++
