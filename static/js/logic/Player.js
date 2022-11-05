@@ -33,6 +33,8 @@ export class Player extends GameObject {
     this.frameCurrentCnt = 0
 
     this.hp = 100
+    this.$hp = this.root.$kof.find(`.kof-head-hp-${this.id}>div`)
+    this.$hp_div = this.$hp.find('div')
   }
 
   start() {
@@ -184,9 +186,19 @@ export class Player extends GameObject {
     this.frameCurrentCnt = 0
 
     this.hp = Math.max(this.hp - 10, 0)
+
+    this.$hp_div.animate({
+      width: this.$hp.parent().width() * this.hp / 100
+    }, 300)
+
+    this.$hp.animate({
+      width: this.$hp.parent().width() * this.hp / 100
+    }, 600)
+
     if (this.hp <= 0) {
       this.status = 6
       this.frameCurrentCnt = 0
+      this.vx = 0
     }
   }
 
